@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ML Prediction</title>
+</head>
+<body>
+
+<h2>Prediction App</h2>
+
+<input id="age" placeholder="Age">
+<input id="bmi" placeholder="BMI">
+<input id="children" placeholder="Children">
+
+<select id="region">
+  <option value="northwest">northwest</option>
+  <option value="southeast">southeast</option>
+  <option value="southwest">southwest</option>
+</select>
+
+<!-- FIXED HERE -->
+<select id="smoker">
+  <option value="yes">yes</option>
+  <option value="no">no</option>
+</select>
+
+<select id="sex">
+  <option value="male">male</option>
+  <option value="female">female</option>
+</select>
+<!-- END FIX -->
+
+<button onclick="predict()">Predict</button>
+
+<p id="result"></p>
+
+<script>
+function predict() {
+
+    // 1. Read inputs
+    let age = parseFloat(document.getElementById("age").value);
+    let bmi = parseFloat(document.getElementById("bmi").value);
+    let children = parseInt(document.getElementById("children").value);
+
+    let region = document.getElementById("region").value;
+    let smoker = document.getElementById("smoker").value;
+    let sex = document.getElementById("sex").value;
+
+    // 2. Encode region (YOUR REQUIRED PART)
+    let region_northwest = (region === "northwest") ? 1 : 0;
+    let region_southeast = (region === "southeast") ? 1 : 0;
+    let region_southwest = (region === "southwest") ? 1 : 0;
+
+    // 3. Encode smoker and sex
+    let smoker_val = (smoker === "yes") ? 1 : 0;
+    let sex_val = (sex === "male") ? 1 : 0;
+
+    // 4. Send correct feature array
+    fetch("/predict", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            features: [
+                age,
+                bmi,
+                children,
+                region_northwest,
+                region_southeast,
+                region_southwest,
+                smoker_val,
+                sex_val
+            ]
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("result").innerText =
+            "Predicted Insurance Cost: " + data.prediction;
+    });
+}
+</script>
+
+</body>
+</html>
