@@ -1,30 +1,34 @@
 from flask import Flask, request, jsonify
 import pickle
-import numpy as np
+from flask import render_template
 
 app = Flask(__name__)
 
-# Load model
 model = pickle.load(open("model.pkl", "rb"))
+
 
 @app.route("/")
 def home():
-    return "ML API is running!"
+    return render_template("index.html")
 
 @app.route("/predict", methods=["POST"])
 def predict():
+    data = request.get_json()
+
+    if not data or "features" not in data:
+        return jsonify({"error": "Missing 'features'"}), 400
+
     try:
-        data = request.get_json()
+        features = data["features"]
 
-        features = np.array(data["features"]).reshape(1, -1)
-        prediction = model.predict(features)
+    except:
+        return jsonify({"error": "Invalid input"}), 400
 
-        return jsonify({
-    "prediction": float(prediction[0])
+    prediction = model.predict([features])
+
+    return jsonify({
+        "prediction": round(float(prediction[0]), 2)
     })
-    
-    except Exception as e:
-        return jsonify({"error": str(e)})
 
 if __name__ == "__main__":
     app.run(debug=True)
